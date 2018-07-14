@@ -1,0 +1,78 @@
+.MODEL SMALL
+.STACK 100H
+.DATA
+
+
+MSG1 DB 10,13,'ENTER A HEX DIGIT:$'
+MSG2 DB 10,13,'IN DECIMAL IS IT:$'
+MSG3 DB 10,13,'DO YOU WANT TO DO IT AGAIN?$'
+MSG4 DB 10,13,'ILLEGAL CHARACTER- ENTER 0-9 OR A-F:$' 
+
+.CODE       
+
+AGAIN:
+    MOV AX,@DATA
+    MOV DS,AX
+    LEA DX,MSG1
+    MOV AH,9
+    INT 21H
+    MOV AH,1
+    INT 21H
+    MOV BL,AL
+    JMP GO    
+    
+GO:
+    CMP BL,'9'
+    JA HEX ;IF BL>9 GO T HEX LABEL
+    JB NUM
+    JE NUM  
+    
+HEX:
+    CMP BL,'F'
+    JA ILLEGAL ;IF BL>F ILLEGAL
+    LEA DX,MSG2
+    MOV AH,9
+    INT 21H
+    MOV DL,49D
+    MOV AH,2
+    INT 21H
+    SUB BL,17D ; CONVERT TO LETTER
+    MOV DL,BL
+    MOV AH,2
+    INT 21H
+    JMP INP
+    
+INP:
+    LEA DX,MSG3
+    MOV AH,9
+    INT 21H
+    MOV AH,1
+    INT 21H
+    MOV CL,AL
+    CMP CL,'Y'
+    JE AGAIN
+    CMP CL,'Y'
+    JE AGAIN
+    JMP EXIT
+    
+NUM:
+    CMP BL,'0'
+    JB ILLEGAL
+    LEA DX,MSG2
+    MOV AH,9
+    INT 21H
+    MOV DL,BL
+    MOV AH,2
+    INT 21H
+    JMP INP 
+    
+ILLEGAL:
+    LEA DX,MSG4
+    MOV AH,9
+    INT 21H
+    MOV AH,1
+    INT 21H
+    MOV BL,AL
+    JMP GO 
+    
+EXIT:
