@@ -1,0 +1,65 @@
+.MODEL SMALL
+.STACK 100H
+.DATA
+MSG1 DB 10,13,'TYPE A BINARY NUMBER UPTO 8 DIGITS:$'
+MSG2 DB 10,13,'THE BINARY SUM IS:$'
+.CODE
+MAIN PROC
+        MOV AX,@DATA
+        MOV DS,AX
+        LEA DX,MSG1
+        MOV AH,9
+        INT 21H
+        MOV AH,1
+        INT 21H
+        XOR BX,BX
+        MOV CX,8
+    INPUT1:
+        MOV AH,1
+        INT 21H
+        CMP AL,0DH
+        JE BREAK
+        AND AL,0FH ;CONVERT TO BINARY
+        SHL BL,1 ;MAKE ROOM FOR NEW VALUE
+        OR BL,AL ;INSERT VALUE
+        LOOP INPUT1
+    BREAK:
+        LEA DX,MSG1
+        MOV AH,9
+        INT 21H
+        MOV CX,8
+    INPUT2:
+        MOV AH,1
+        INT 21H
+        CMP AL,0DH
+        JE BREAK2
+        AND AL,0FH ;CONVERT TO BINARY
+        SHL BH,1 ;MAKE ROOM FOR NEW VALUE
+        OR BH,AL ;INSERT VALUE
+        LOOP INPUT2
+    BREAK2:
+        LEA DX,MSG2
+        MOV AH,9
+        INT 21H
+    SUM:
+        ADD BL,BH ;SUM BINARY 00000011+00000010, BL=000000101
+        JNC ZERO ;IF SUM HAS NO CARRY THEN NO NEED TO PRINT ZERO
+        MOV DL,31H
+        MOV AH,2
+        INT 21H ;IF SUM HAS CARRY 1 THEN NEED TO PRINT 1
+    ZERO:
+        MOV DL,30H
+        MOV CX,8
+    PRINT:
+        SHL BL,1 ;SENDING ONE BY ONEE BIT TO PRINT 000000101
+        JNC Z
+        MOV DL,31H
+        JMP DISPLAY
+    Z:
+        MOV DL,30H
+    DISPLAY:
+        MOV AH,2
+        INT 21H
+        LOOP PRINT
+    MAIN ENDP
+END MAIN
